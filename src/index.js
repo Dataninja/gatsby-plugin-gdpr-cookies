@@ -38,8 +38,22 @@ const initFacebookPixel = (options) => {
   }
 }
 
+const initGoogleTagManager = (options) => {
+  if (
+    cookies.get(options.googleTagManager.cookieName) === `true` &&
+    validGTMTrackingId(options)
+  ) {
+    (options.googleTagManager.dataLayerName
+      ? window[options.googleTagManager.dataLayerName]
+      : window.dataLayer).push({'gtm.start':
+      new Date().getTime(),event:'gtm.js'})
+    window.GoogleTagManagerInitialized = true
+  }
+}
+
 const checkIfGoogleAnalyticsIsInitilized = () => !!window.GoogleAnalyticsIntialized
 const checkIfFacebookPixelIsInitilized = () => !!window.FacebookPixelInitialized
+const checkIfGoogleTagManagerIsInitilized = () => !!window.GoogleTagManagerInitialized
 
 export const initializePlugin = (options) => {
   if (isEnvironmentValid(options.environments)) {
@@ -48,6 +62,9 @@ export const initializePlugin = (options) => {
 
     // facebook pixel
     initFacebookPixel(options)
+
+    // google tag manager
+    initGoogleTagManager(options)
   }
 }
 
@@ -70,6 +87,7 @@ export const trackVisit = (options, location) => {
     }
 
     // google tag manager
+    if (!checkIfGoogleTagManagerIsInitilized()) initGoogleTagManager(options);
     if (
       cookies.get(options.googleTagManager.cookieName) === `true` &&
       validGTMTrackingId(options)
